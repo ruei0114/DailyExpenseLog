@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static',    filename='css/finance.css') }}">
+    <title>Income Tracker</title>
+</head>
+<body style="background-color: #191919">
+    <!-- Top Bar -->
+    <div class="topBar"></div>
+    <!-- center table -->
+    <div class="frame">
+        <div class="finance">
+            <div class="tableFrame">
+              <form id="expenseForm">
+                <div class="row" style="display: flex; align-items: center;">
+                  <svg role="graphics-symbol" viewBox="0 0 16 16" class="collectionTable" style="width: 14px; height: 14px; display: block; fill: rgba(255, 255, 255, 0.81); flex-shrink: 0; margin: 6px;"><path d="M2.39697 14.4634H13.5964C15.0532 14.4634 15.8311 13.6921 15.8311 12.2485V4.24609C15.8311 2.80249 15.0532 2.03125 13.5964 2.03125H2.39697C0.940186 2.03125 0.162354 2.7959 0.162354 4.24609V12.2485C0.162354 13.6987 0.940186 14.4634 2.39697 14.4634ZM1.63232 4.39771C1.63232 3.79126 1.94214 3.50122 2.52222 3.50122H7.28809V5.74243H1.63232V4.39771ZM13.4712 3.50122C14.0447 3.50122 14.3611 3.79126 14.3611 4.39771V5.74243H8.70532V3.50122H13.4712ZM1.63232 9.3811V7.10693H7.28809V9.3811H1.63232ZM8.70532 9.3811V7.10693H14.3611V9.3811H8.70532ZM2.52222 12.9934C1.94214 12.9934 1.63232 12.7034 1.63232 12.0969V10.7522H7.28809V12.9934H2.52222ZM14.3611 12.0969C14.3611 12.7034 14.0447 12.9934 13.4712 12.9934H8.70532V10.7522H14.3611V12.0969Z"></path></svg><span style="color: rgba(255, 255, 255, 0.81); font-size:14px">insert table</span>
+                </div>
+                <div class="row">
+                    <div class="table col">Item</div>
+                    <div class="table col">Date</div>
+                    <div class="table col">Category</div>
+                    <div class="table col">Amount</div>
+                </div>
+                <div class="row">
+                    <div class="content col"><input type="text" name="item" class="itemInput" id="itm"></div>
+                    <div class="content col">
+                      <input type="date" class="dateInput" name="date" id="dt">
+                    </div>
+                    <div class="content col">
+                      <input type="text" class="categoryInput" list="income_cost" style="width: 40%;" name="in_out" id="io" oninput="updateCategoryOptions()">
+                      <datalist id="income_cost">
+                        <option value="收入"\>
+                        <option value="支出"\>
+                      </datalist>
+                      <input type="text" class="categoryInput" list="types" style="width: 60%; margin-left: 5px; display: none;" name="category" id="catg" oninput="updateTypeOptions()">
+                      <datalist id="types">
+                        
+                      </datalist>
+                    </div>
+                    <div class="content col"><input type="number" name="amount" class="itemInput" inputmode="numeric" id="amt"></div>
+                </div>
+              </form>
+                <!-- add data button -->
+                <div style="color:#626262; border-bottom: 1px solid #2f2f2f; padding:7px; cursor: pointer;"
+                     onmouseover="over(this);"
+                     onmouseout="out(this);"
+                     onclick="submitForm();">
+                  <span style="display: inline-flex;"><svg viewBox="0 0 16 16" style="width: 14px; height: 14px; display: block; fill: rgba(255, 255, 255, 0.282); flex-shrink: 0; margin-left: -1px; margin-right: 6px;">
+                      <path d="M7.977 14.963c.407 0 .747-.324.747-.723V8.72h5.362c.399 0 .74-.34.74-.747a.746.746 0 00-.74-.738H8.724V1.706c0-.398-.34-.722-.747-.722a.732.732 0 00-.739.722v5.529h-5.37a.746.746 0 00-.74.738c0 .407.341.747.74.747h5.37v5.52c0 .399.332.723.739.723z"></path>
+                    </svg> Add Data</span>
+                </div>
+            </div>
+          </div>
+    </div>
+    <div class="frame">
+      <span id="message-container"></span>
+    </div>
+    
+    <div class="frame">
+      <div class="finance">
+        <div class="tableFrame">
+            <!-- filter -->>
+            <div class="row" style="display: flex; align-items: center; ">
+              <div class="filterFrame" style="margin-bottom: 3px;">
+                <div id="filterBtn" onmouseover="overFilterBtn(this);"
+                                    onmouseout="outFilterBtn(this);"
+                                    onclick="clickFilter();">filter</div>
+                <div id="filterForm" style="display: none;">
+                  <div id="filter"><input type="date" id="dateFilter" name="dateFilter"></div>
+                  <div id="confirmBtn" 
+                       style="margin-left: 10px; display: flex;
+                       align-items: center;
+                       border-radius: 5px;
+                       color: #626262;
+                       cursor: pointer;
+                       padding: 3px 5px 3px 5px;"
+                       onmouseover="overFilterBtn(this);"
+                       onmouseout="outFilterBtn(this);"
+                       onclick="applyFilter();">confirm</div>
+                </div>
+              </div>
+            </div>
+            <div class="row" id="filteredHead" style="display: none;">
+                <div class="table col">Item</div>
+                <div class="table col">Date</div>
+                <div class="table col">Category</div>
+                <div class="table col">Amount</div>
+            </div>
+            <!-- filtered table -->
+            <div id="filteredData"></div>
+            <!-- cost/income information -->>
+            <div style="width: 100%; display: flex; margin-left: 6px; margin-top:10px; display: none;" id="costIncomeFrame">
+              <div style="color: #626262; width: 25%;">cost: <span id="totalCost"></span></div>
+              <div style="color: #626262; width: 25%;">income: <span id="totalIncome"></span></div>
+              <div style="width: 50%; display: flex; margin-right: 17px;">
+                <span id="difference" style="color: #626262; "></span>
+                <div style="color: #2282e1; margin-left: auto; border-radius: 15px; cursor: pointer; padding: 3px 5px 3px 5px;"
+                    onmouseover="overFilterBtn(this);"
+                    onmouseout="outFilterBtn(this);"
+                    onclick="clearFilter();">Clear Filter</div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <script src="{{url_for('static',    filename='js/finance.js')}}"></script>
+</body>
+</html>
