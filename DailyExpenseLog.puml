@@ -1,0 +1,46 @@
+@startuml DailyExpenseLog
+
+' 定義 BaseApp 類別
+class BaseApp {
+  +app: Flask
+  +__init__()
+  +run()
+}
+
+' 定義 FinanceApp 類別
+class FinanceApp {
+  +processor: DataProcessor
+  ----
+  +__init__()
+  -_register_routes()
+  +DailyExpenseLog()
+  +save_data()
+  +apply_filter()
+  -- static method --
+  +{static} validate_form(func)
+  +{static} get_form_data()
+  +{static} save_to_database(item, date, inOut, category, amount)
+  +{static} check_duplicate(cur, item, date, inOut, category, amount)
+  +{static} make_response(status, message)
+}
+
+' 定義 DataProcessor 類別
+class DataProcessor {
+  +sort_by_amount(data: list[dict]): list[dict]
+}
+
+' 定義關係
+BaseApp <|-- FinanceApp : inheritant
+FinanceApp *-- "1" DataProcessor : has-a
+
+' 註解
+note right of FinanceApp::processor
+  FinanceApp 透過 Composition 擁有 DataProcessor物件，
+  這個物件負責 apply_filter() 中資料輸出前的排序處理。
+end note
+
+note left of FinanceApp::save_data()
+  使用 decorator : validate_form
+  ，用於驗證每筆將儲存的資料是否為空(null)。
+end note
+@enduml

@@ -3,24 +3,6 @@ import copy
 from flask import Flask, request, render_template, jsonify
 from functools import wraps
 
-def validate_form(func):
-    @wraps(func)
-    def wrapper(self):
-        data = request.form
-        required_fields = ['item', 'date', 'in_out', 'category', 'amount']
-        for field in required_fields:
-            if field not in data or data[field] == '':
-                return jsonify({'status': 'error', 'message': f'Missing or empty field: {field}'})
-        # 驗證 amount
-        try:
-            amount = float(data['amount'])
-            if amount < 0:
-                return jsonify({'status': 'error', 'message': 'Amount must be non-negative'})
-        except ValueError:
-            return jsonify({'status': 'error', 'message': 'Invalid amount'})
-        return func(self)
-    return wrapper
-
 # Composition 結構：FinanceApp 擁有 DataProcessor
 class DataProcessor:
     def sort_by_amount(self, data: list[dict]) -> list[dict]:
@@ -46,18 +28,30 @@ class FinanceApp(BaseApp):
         self.app.route('/save_data', methods=['POST'])(self.save_data)
         self.app.route('/apply_filter', methods=['POST'])(self.apply_filter)
 
-    @staticmethod
-    def check_duplicate(cur, item, date, inOut, category, amount):
-        cur.execute('''SELECT * FROM Finance WHERE item = ? AND date = ? AND inOut = ? AND category = ? AND amount = ?''',
-                    (item, date, inOut, category, amount))
-        return cur.fetchone() is None
-
     def DailyExpenseLog(self):
         return render_template('finance.html')
     
     @staticmethod
+    def validate_form(func):
+        @wraps(func)
+        def wrapper(self):
+            data = request.form
+            required_fields = ['item', 'date', 'in_out', 'category', 'amount']
+            for field in required_fields:
+                if field not in data or data[field] == '':
+                    return jsonify({'status': 'error', 'message': f'Missing or empty field: {field}'})
+            # 驗證 amount
+            try:
+                amount = float(data['amount'])
+                if amount < 0:
+                    return jsonify({'status': 'error', 'message': 'Amount must be non-negative'})
+            except ValueError:
+                return jsonify({'status': 'error', 'message': 'Invalid amount'})
+            return func(self)
+        return wrapper
+    
+    @staticmethod
     def get_form_data():
-    # 從 request.form 提取並返回表單資料
         return {
             'item': request.form.get('item'),
             'date': request.form.get('date'),
@@ -83,6 +77,12 @@ class FinanceApp(BaseApp):
         finally:
             con.close()
 
+    @staticmethod
+    def check_duplicate(cur, item, date, inOut, category, amount):
+        cur.execute('''SELECT * FROM Finance WHERE item = ? AND date = ? AND inOut = ? AND category = ? AND amount = ?''',
+                    (item, date, inOut, category, amount))
+        return cur.fetchone() is None
+    
     @staticmethod
     def make_response(status, message=None):
         # 生成標準化的 JSON 訊息。
